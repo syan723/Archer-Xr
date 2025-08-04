@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@string/gcm_defaultSenderId,@string/google_storage_bucket,@string/project_id,@string/google_api_key,@string/google_crash_reporting_api_key,@string/google_app_id,@string/default_android_client_id,@string/default_web_client_id">
+  <string name="gcm_defaultSenderId" translatable="false">510989075004</string>
+  <string name="google_storage_bucket" translatable="false">archyxr.firebasestorage.app</string>
+  <string name="project_id" translatable="false">archyxr</string>
+  <string name="google_api_key" translatable="false">AIzaSyCAL4qXG5VSRsiQxlTTuTF8azc79CY7GSE</string>
+  <string name="google_crash_reporting_api_key" translatable="false">AIzaSyCAL4qXG5VSRsiQxlTTuTF8azc79CY7GSE</string>
+  <string name="google_app_id" translatable="false">1:510989075004:android:aa5980aee947b82adc3939</string>
+  <string name="default_android_client_id" translatable="false">510989075004-djjdosb69d40esrhtbb2m6nfmtpkh7cm.apps.googleusercontent.com</string>
+  <string name="default_web_client_id" translatable="false">510989075004-kjscj9hv7qnqudnpgqrokqcn2n3vcfpu.apps.googleusercontent.com</string>
+</resources>

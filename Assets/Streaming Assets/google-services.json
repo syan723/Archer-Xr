@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "510989075004",
+    "project_id": "archyxr",
+    "storage_bucket": "archyxr.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:510989075004:android:aa5980aee947b82adc3939",
+        "android_client_info": {
+          "package_name": "com.DefaultCompany.ArcherXR"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "510989075004-djjdosb69d40esrhtbb2m6nfmtpkh7cm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.DefaultCompany.ArcherXR",
+            "certificate_hash": "dc1eec85b2875f27e9ec8031f95f74df892c0c1c"
+          }
+        },
+        {
+          "client_id": "510989075004-kjscj9hv7qnqudnpgqrokqcn2n3vcfpu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCAL4qXG5VSRsiQxlTTuTF8azc79CY7GSE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "510989075004-kjscj9hv7qnqudnpgqrokqcn2n3vcfpu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
