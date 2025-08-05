@@ -1,150 +1,130 @@
-using System;
-using System.Threading.Tasks;
-using Firebase.Auth;
+using System.Collections;
+using System.Collections.Generic;
+using Firebase.Extensions;
 using Google;
+using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
+using Firebase.Auth;
+using UnityEngine.UI;
+using UnityEngine.Networking;
 
 public class GoogleAuthManager : MonoBehaviour
 {
-    // === IMPORTANT: PASTE YOUR WEB CLIENT ID HERE ===
-    // You get this from the Firebase Console -> Authentication -> Sign-in method -> Google -> Web SDK configuration
-    public string webClientId = "510989075004-kjscj9hv7qnqudnpgqrokqcn2n3vcfpu.apps.googleusercontent.com";
+    [Header("Google API")]
+    private string GoogleAPI = "510989075004-kjscj9hv7qnqudnpgqrokqcn2n3vcfpu.apps.googleusercontent.com"; // Replace with your actual WebClientID
+    private GoogleSignInConfiguration configuration;
 
-    // Firebase and Google Sign-in instances
+    [Header("Firebase Auth")]
     private FirebaseAuth auth;
-    private GoogleSignInConfiguration googleConfig;
+    private FirebaseUser user;
 
-    [Header("UI Elements")]
-    public TMP_Text statusText;
-    public Button signInButton;
-    public Button signOutButton;
+    [Header("UI References")]
+    public TextMeshProUGUI Username, UserEmail;
+    public GameObject LoginPanel, UserPanel;
+    public Image UserProfilePic;
 
-    void Start()
+    private string imageUrl;
+    private bool isGoogleSignInInitialized = false;
+
+    private void Start()
     {
-        // 1. Initialize Firebase Auth and Google Sign-in Configuration
-        InitializeFirebase();
-        InitializeGoogleSignIn();
-
-        // 2. Set up button click listeners
-        signInButton.onClick.AddListener(OnSignInClicked);
-        signOutButton.onClick.AddListener(OnSignOutClicked);
-
-        // 3. Update the UI based on the current auth state
-        UpdateUI();
+        InitFirebase();
     }
 
-    private void InitializeFirebase()
+    void InitFirebase()
     {
         auth = FirebaseAuth.DefaultInstance;
-        // Listen for authentication state changes (good practice)
-        auth.StateChanged += OnAuthStateChanged;
-        OnAuthStateChanged(this, null);
     }
 
-    private void InitializeGoogleSignIn()
+    public void Login()
     {
-        googleConfig = new GoogleSignInConfiguration
+        if (!isGoogleSignInInitialized)
         {
-            WebClientId = webClientId,
-            RequestIdToken = true,
-            RequestEmail = true
-        };
-    }
+            GoogleSignIn.Configuration = new GoogleSignInConfiguration
+            {
+                RequestIdToken = true,
+                WebClientId = GoogleAPI,
+                RequestEmail = true
+            };
+            isGoogleSignInInitialized = true;
+        }
 
-    private void OnAuthStateChanged(object sender, EventArgs e)
-    {
-        UpdateUI();
-    }
-
-    private void UpdateUI()
-    {
-        FirebaseUser user = auth.CurrentUser;
-        if (user != null)
+        GoogleSignIn.DefaultInstance.SignIn().ContinueWithOnMainThread(task =>
         {
-            // User is signed in
-            statusText.text = $"Signed in as: {user.DisplayName} ({user.Email})";
-            signInButton.gameObject.SetActive(false);
-            signOutButton.gameObject.SetActive(true);
+            if (task.IsCanceled)
+            {
+                Debug.LogWarning("Google sign-in was canceled.");
+                return;
+            }
+
+            if (task.IsFaulted)
+            {
+                Debug.LogError("Google sign-in encountered an error: " + task.Exception);
+                return;
+            }
+
+            GoogleSignInUser googleUser = task.Result;
+
+            Credential credential = GoogleAuthProvider.GetCredential(googleUser.IdToken, null);
+
+            auth.SignInWithCredentialAsync(credential).ContinueWithOnMainThread(authTask =>
+            {
+                if (authTask.IsCanceled)
+                {
+                    Debug.LogWarning("Firebase auth was canceled.");
+                    return;
+                }
+
+                if (authTask.IsFaulted)
+                {
+                    Debug.LogError("Firebase auth failed: " + authTask.Exception);
+                    return;
+                }
+
+                user = auth.CurrentUser;
+
+                Username.text = user.DisplayName;
+                UserEmail.text = user.Email;
+
+                LoginPanel.SetActive(false);
+                UserPanel.SetActive(true);
+
+                StartCoroutine(LoadImage(CheckImageUrl(user.PhotoUrl?.ToString())));
+            });
+        });
+    }
+
+    private string CheckImageUrl(string url)
+    {
+        if (!string.IsNullOrEmpty(url))
+        {
+            return url;
+        }
+        return imageUrl;
+    }
+
+    IEnumerator LoadImage(string imageUri)
+    {
+        UnityWebRequest www = UnityWebRequestTexture.GetTexture(imageUri);
+        yield return www.SendWebRequest();
+
+        if (www.result == UnityWebRequest.Result.Success)
+        {
+            Texture2D texture = DownloadHandlerTexture.GetContent(www);
+            UserProfilePic.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+            Debug.Log("Image loaded successfully.");
         }
         else
         {
-            // User is signed out
-            statusText.text = "Signed out. Please sign in.";
-            signInButton.gameObject.SetActive(true);
-            signOutButton.gameObject.SetActive(false);
+            Debug.LogError("Error loading profile image: " + www.error);
         }
     }
-
-    public void OnSignInClicked()
+    // User SignOut From Firebase First Then again Sign IN With Google
+    public void SignOut()
     {
-        statusText.text = "Attempting to sign in with Google...";
-
-        // Step 1: Start the Google Sign-in process
-        GoogleSignIn.DefaultInstance.SignIn().ContinueWith(HandleGoogleSignInResult);
-    }
-
-    private async Task HandleGoogleSignInResult(Task<GoogleSignInUser> task)
-    {
-        if (task.IsCanceled)
-        {
-            statusText.text = "Google Sign-in was canceled.";
-            Debug.LogError("Google Sign-in was canceled.");
-            return;
-        }
-        if (task.IsFaulted)
-        {
-            statusText.text = "Google Sign-in failed.";
-            Debug.LogError("Google Sign-in failed: " + task.Exception);
-            return;
-        }
-
-        GoogleSignInUser googleUser = task.Result;
-        statusText.text = "Signed in with Google. Authenticating with Firebase...";
-
-        try
-        {
-            Credential credential = GoogleAuthProvider.GetCredential(googleUser.IdToken, null);
-
-            FirebaseUser user = await auth.SignInWithCredentialAsync(credential);  // ✅ Correct
-
-            Debug.Log("Signed in successfully with Firebase! User ID: " + user.UserId);
-            UpdateUI();
-        }
-        catch (Exception e)
-        {
-            statusText.text = "Firebase Sign-in failed.";
-            Debug.LogError("Firebase Sign-in failed: " + e.Message);
-        }
-    }
-
-
-    private void HandleFirebaseSignInResult(Task<AuthResult> task)
-    {
-        if (task.IsCanceled)
-        {
-            statusText.text = "Firebase Sign-in canceled.";
-            Debug.LogError("Firebase Sign-in canceled.");
-            return;
-        }
-        if (task.IsFaulted)
-        {
-            statusText.text = "Firebase Sign-in failed.";
-            Debug.LogError("Firebase Sign-in failed: " + task.Exception);
-            return;
-        }
-
-        FirebaseUser user = task.Result.User;
-        Debug.Log("Signed in successfully with Firebase! User ID: " + user.UserId);
-        UpdateUI();
-    }
-
-    public void OnSignOutClicked()
-    {
-        auth.SignOut();
         GoogleSignIn.DefaultInstance.SignOut();
-        UpdateUI();
-        Debug.Log("User signed out.");
+        LoginPanel.SetActive(true);
+        UserPanel.SetActive(false);
     }
 }
