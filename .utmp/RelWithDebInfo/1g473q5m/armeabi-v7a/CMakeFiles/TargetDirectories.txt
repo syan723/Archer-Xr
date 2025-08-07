@@ -1,0 +1,5 @@
+J:/Programming/Archer-Xr/.utmp/RelWithDebInfo/1g473q5m/armeabi-v7a/CMakeFiles/edit_cache.dir
+J:/Programming/Archer-Xr/.utmp/RelWithDebInfo/1g473q5m/armeabi-v7a/CMakeFiles/rebuild_cache.dir
+J:/Programming/Archer-Xr/.utmp/RelWithDebInfo/1g473q5m/armeabi-v7a/FramePacing/CMakeFiles/swappywrapper.dir
+J:/Programming/Archer-Xr/.utmp/RelWithDebInfo/1g473q5m/armeabi-v7a/FramePacing/CMakeFiles/edit_cache.dir
+J:/Programming/Archer-Xr/.utmp/RelWithDebInfo/1g473q5m/armeabi-v7a/FramePacing/CMakeFiles/rebuild_cache.dir

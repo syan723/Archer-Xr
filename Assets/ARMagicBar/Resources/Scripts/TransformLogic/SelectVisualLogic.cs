@@ -107,8 +107,8 @@ namespace ARMagicBar.Resources.Scripts.TransformLogic
         //Check for URP
         void SetSelectedMaterialDependingOnRP()
         {
-            bool isURP = GraphicsSettings.renderPipelineAsset != null &&
-                         GraphicsSettings.renderPipelineAsset.GetType().Name.Contains("Universal");
+            bool isURP = GraphicsSettings.defaultRenderPipeline != null &&
+                         GraphicsSettings.defaultRenderPipeline.GetType().Name.Contains("Universal");
             
             if (isURP)
             {

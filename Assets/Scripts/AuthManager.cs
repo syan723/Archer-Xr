@@ -2,7 +2,8 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
-using TMPro; // Important for TextMeshPro
+using TMPro;
+using UnityEngine.SceneManagement; // Important for TextMeshPro
 
 // This class will hold the data we send to the API
 [Serializable]
@@ -85,6 +86,7 @@ public class AuthManager : MonoBehaviour
             email = email,
             password = password
         };
+        statusText.text = "Logging In...";
 
         // 3. Serialize the data object to a JSON string
         string jsonRequestBody = JsonUtility.ToJson(loginData);
@@ -128,11 +130,12 @@ public class AuthManager : MonoBehaviour
 
                     Debug.Log("Login Successful! Access Token: " + accessToken);
                     Debug.Log("User Role: " + userRole);
-
-                    statusText.text = "Login Successful! Welcome, " + email ;
+                    StateManager.Instance.sessionInfo = new SessionInfo { accessToken = accessToken, userRole = userRole };
+                    PlayerPrefs.SetString("Session Info", JsonUtility.ToJson(StateManager.Instance.sessionInfo));
+                    statusText.text = "Login Successful! Welcome, " + email;
 
                     // --- New Logic for Hiding Message and Showing Next Panel ---
-                    yield return new WaitForSeconds(2f); // Wait for 2 seconds
+                    yield return new WaitForSeconds(1f); // Wait for 2 seconds
 
                     // Hide the status message after the delay
                     statusText.text = "";
@@ -148,14 +151,15 @@ public class AuthManager : MonoBehaviour
                     }
 
                     // Activate the next panel
-                    if (nextPanel != null)
-                    {
-                        nextPanel.SetActive(true);
-                    }
-                    else
-                    {
-                        Debug.LogWarning("Next Panel reference is not set in the Inspector.");
-                    }
+                    //if (nextPanel != null)
+                    //{
+                    //    //nextPanel.SetActive(true);
+                    //}
+                    //else
+                    //{
+                    //    Debug.LogWarning("Next Panel reference is not set in the Inspector.");
+                    //}
+                    SceneManager.LoadScene(1);
                     // --- End New Logic ---
                 }
                 else
@@ -168,4 +172,10 @@ public class AuthManager : MonoBehaviour
             }
         }
     }
+}
+[Serializable]
+public class SessionInfo
+{
+    public string accessToken;
+    public string userRole;
 }
