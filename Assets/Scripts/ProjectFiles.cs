@@ -4,12 +4,18 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class ProjectFiles : MonoBehaviour
 {
+    public static ProjectFiles Instance;
     public GameObject prefab;
     public List<GameObject> slots;
     public FileListResponse fileList;
+    private void Awake()
+    {
+        Instance = this;
+    }
     private void Start()
     {
         Fetch();
@@ -54,6 +60,11 @@ public class ProjectFiles : MonoBehaviour
                     slot.gameObject.SetActive(true);
 
                     slot.GetComponentInChildren<TextMeshProUGUI>().text = (file.name.Split('.')[0]);
+                    slot.GetComponentInChildren<Button>().onClick.AddListener(() =>
+                    {
+// delete file
+
+                    });
 
                 }
             }

@@ -19,7 +19,7 @@ public class ProjectListView : MonoBehaviour
     }
     IEnumerator Fetch()
     {
-        string u = StateManager.baseUrl + "mobile/projects";
+        string u = StateManager.baseUrl + "mobile/projects/browse";
         Debug.LogError(u);
         using (UnityWebRequest webRequest = new UnityWebRequest(u, "GET"))
         {

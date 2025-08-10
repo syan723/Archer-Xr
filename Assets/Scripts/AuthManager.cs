@@ -82,8 +82,8 @@ public class AuthManager : MonoBehaviour
     public GameObject nextPanel;
 
     // The API endpoint for logging in
-    private string loginUrl = StateManager.baseUrl + "auth/login";
-    private string registerUrl = StateManager.baseUrl + "auth/register";
+    private string loginUrl = StateManager.baseUrl + "mobile/auth/login";
+    private string registerUrl = StateManager.baseUrl + "mobile/auth/register";
 
     // Call this method from a button's OnClick() event
     public void OnLoginButtonClicked()
@@ -145,16 +145,16 @@ public class AuthManager : MonoBehaviour
                     Debug.LogError(jsonResponse);
                     LoginApiResponse apiResponse = JsonUtility.FromJson<LoginApiResponse>(jsonResponse);
 
+                    string accessToken = apiResponse.data.session.accessToken;
+                    string userRole = apiResponse.data.user.role;
+                    Debug.Log("Login Successful! Access Token: " + accessToken);
+                    Debug.Log("User Role: " + userRole);
+
+                    StateManager.Instance.sessionInfo = new SessionInfo { accessToken = accessToken, userRole = userRole };
+                    PlayerPrefs.SetString("Session Info", JsonUtility.ToJson(StateManager.Instance.sessionInfo));
+                    statusText.text = "Login Successful! Welcome, " + email;
                     try
                     {
-                        string accessToken = apiResponse.data.session.accessToken;
-                        string userRole = apiResponse.data.user.role;
-                        Debug.Log("Login Successful! Access Token: " + accessToken);
-                        Debug.Log("User Role: " + userRole);
-
-                        StateManager.Instance.sessionInfo = new SessionInfo { accessToken = accessToken, userRole = userRole };
-                        PlayerPrefs.SetString("Session Info", JsonUtility.ToJson(StateManager.Instance.sessionInfo));
-                        statusText.text = "Login Successful! Welcome, " + email;
                     }
                     catch (Exception e)
                     {

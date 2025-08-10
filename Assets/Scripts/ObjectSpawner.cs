@@ -21,8 +21,10 @@ public class ObjectSpawner : MonoBehaviour
     {
         if (selectedPrefab != null && Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
         {
+            Debug.LogError("pressed");
             if (raycastManager.Raycast(Input.GetTouch(0).position, hits, TrackableType.PlaneWithinPolygon))
             {
+                Debug.LogError("instantiatted");
                 Pose hitPose = hits[0].pose;
                 Instantiate(selectedPrefab, hitPose.position, hitPose.rotation);
             }
