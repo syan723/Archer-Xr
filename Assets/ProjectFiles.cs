@@ -12,13 +12,16 @@ public class ProjectFiles : MonoBehaviour
     public FileListResponse fileList;
     private void Start()
     {
+        Fetch();
+    }
+    public void Fetch()
+    {
         StartCoroutine(FetchFiles());
     }
-
     IEnumerator FetchFiles()
     {
         string projectId = StateManager.Instance.currentProject.id;
-        string url = StateManager.baseUrl + "projects/" + projectId + "/files";
+        string url = StateManager.baseUrl + "mobile/projects/" + projectId + "/files";
         Debug.LogError(url);
         string token = StateManager.Instance.sessionInfo.accessToken;
 

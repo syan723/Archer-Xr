@@ -3,13 +3,24 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 using System.Collections;
-using System.Net;
+
+[System.Serializable]
+public class LocationData
+{
+    public float latitude;
+    public float longitude;
+    public string name;
+    public string address;
+    public string description;
+
+}
 
 [System.Serializable]
 public class CreateProjectRequest
 {
     public string name;
     public string description;
+    public LocationData location;
 }
 
 public class CreateProject : MonoBehaviour
@@ -30,26 +41,27 @@ public class CreateProject : MonoBehaviour
 
     IEnumerator Create()
     {
-        // Validate input
-        if (string.IsNullOrWhiteSpace(projectName.text) || string.IsNullOrWhiteSpace(projectDescription.text))
-        {
-            if (statusText != null)
-                statusText.text = "Please fill in both fields.";
-            yield break;
-        }
-
-        string url = StateManager.baseUrl + "projects/";
+        string url = StateManager.baseUrl + "admin/projects"; // removed trailing slash
         Debug.LogError(url);
 
         CreateProjectRequest requestData = new CreateProjectRequest
         {
             name = projectName.text,
-            description = projectDescription.text
+            description = projectDescription.text,
+            location = new LocationData()
+            {
+                address = "null",
+                description = "null",
+                latitude = 0,
+                longitude = 0,
+                name = "null"
+            }
         };
 
         string jsonBody = JsonUtility.ToJson(requestData);
+        Debug.Log("Request JSON: " + jsonBody);
 
-        using (UnityWebRequest request = new UnityWebRequest(url, "POST"))
+        using (UnityWebRequest request = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST))
         {
             byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
@@ -57,9 +69,10 @@ public class CreateProject : MonoBehaviour
             request.SetRequestHeader("Content-Type", "application/json");
             request.SetRequestHeader("Authorization", "Bearer " + StateManager.Instance.sessionInfo.accessToken);
 
-
             yield return request.SendWebRequest();
-            Debug.LogError(request.responseCode);
+
+            Debug.LogError($"Response Code: {request.responseCode}");
+            Debug.LogError($"Response Text: {request.downloadHandler.text}");
 
             if (request.result != UnityWebRequest.Result.Success)
             {
@@ -72,9 +85,6 @@ public class CreateProject : MonoBehaviour
                 Debug.Log("Project created successfully!");
                 if (statusText != null)
                     statusText.text = "Project created successfully!";
-
-                // Optional: Refresh project list or switch panel
-                // Example: SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
             else
             {
@@ -84,4 +94,5 @@ public class CreateProject : MonoBehaviour
             }
         }
     }
+
 }

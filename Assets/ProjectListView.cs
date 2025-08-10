@@ -9,16 +9,17 @@ using UnityEngine.UI;
 
 public class ProjectListView : MonoBehaviour
 {
-    public string url;
     public GameObject prefab;
     public List<GameObject> slots;
+    public bool isExisting;
+    public GameObject manageProjectPanel;
     private void OnEnable()
     {
         StartCoroutine(Fetch());
     }
     IEnumerator Fetch()
     {
-        string u = StateManager.baseUrl + url;
+        string u = StateManager.baseUrl + "mobile/projects";
         Debug.LogError(u);
         using (UnityWebRequest webRequest = new UnityWebRequest(u, "GET"))
         {
@@ -68,7 +69,33 @@ public class ProjectListView : MonoBehaviour
                         // Example: instantiate a slot prefab and fill in details (pseudo-code)
                         GameObject slot = Instantiate(prefab, prefab.transform.parent); // assuming parent is set properly
                         slot.SetActive(true);
-                        slot.GetComponent<Button>().onClick.AddListener(() => StateManager.Instance.currentProject = project);
+                        if (isExisting)
+                        {
+                            var buttons = slot.GetComponentsInChildren<Button>();
+                            buttons[0].onClick.AddListener(() =>
+                            {
+                                StateManager.Instance.currentProject = project;
+                                gameObject.SetActive(false);
+                                manageProjectPanel.SetActive(true);
+                            });
+                            buttons[1].onClick.AddListener(() =>
+                            {
+                                StateManager.Instance.currentProject = project;
+                                // delete api
+                                var p = project;
+                                StartCoroutine(DeleteProject(p.id));
+                                var s = slot;
+                                slots.Remove(slot);
+                                Destroy(s.gameObject);
+
+                            });
+                        }
+                        else
+                            slot.GetComponent<Button>().onClick.AddListener(() =>
+                            {
+                                StateManager.Instance.currentProject = project;
+                                SceneManager.LoadScene(2);
+                            });
                         slots.Add(slot);
 
                         // Assuming the prefab has a script like ProjectSlotView.cs
@@ -83,6 +110,45 @@ public class ProjectListView : MonoBehaviour
         }
 
     }
+    IEnumerator DeleteProject(string projectId)
+    {
+        string deleteUrl = $"{StateManager.baseUrl}admin/projects/{projectId}";
+        Debug.LogError("Deleting project at: " + deleteUrl);
+
+        using (UnityWebRequest deleteRequest = UnityWebRequest.Delete(deleteUrl))
+        {
+            deleteRequest.SetRequestHeader("Content-Type", "application/json");
+
+            if (StateManager.Instance.sessionInfo != null &&
+                !string.IsNullOrEmpty(StateManager.Instance.sessionInfo.accessToken))
+            {
+                deleteRequest.SetRequestHeader("Authorization", "Bearer " + StateManager.Instance.sessionInfo.accessToken);
+            }
+            else
+            {
+                Debug.LogWarning("Access token not found, aborting delete.");
+                yield break;
+            }
+
+            yield return deleteRequest.SendWebRequest();
+
+            if (deleteRequest.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("Delete request failed: " + deleteRequest.error);
+            }
+            else if (deleteRequest.responseCode == 200 || deleteRequest.responseCode == 204)
+            {
+                Debug.Log("Project deleted successfully!");
+                // Optionally refresh project list
+                StartCoroutine(Fetch());
+            }
+            else
+            {
+                Debug.LogError($"API Delete Error ({deleteRequest.responseCode}): {deleteRequest.downloadHandler.text}");
+            }
+        }
+    }
+
 }
 
 [System.Serializable]

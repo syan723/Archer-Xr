@@ -5,7 +5,7 @@ public class StateManager : MonoBehaviour
 {
     public static StateManager Instance;
     public SessionInfo sessionInfo;
-    public static string baseUrl = "https://xrarchy.vercel.app/api/mobile/";
+    public static string baseUrl = "https://xrarchy.vercel.app/api/";
     public Project currentProject;
     private void Awake()
     {
